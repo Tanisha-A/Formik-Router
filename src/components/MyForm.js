@@ -10,7 +10,7 @@ import { nanoid } from "@reduxjs/toolkit";
 import { CREATE_USER, UPDATE_USER_BY_ID } from "../redux/types";
 
 
-const validationSchema = Yup.object({
+const validationSchema = Yup.object().shape({
   name: Yup.string().required("Name is required"),
   email: Yup.string().email("Invalid email").required("Email is required"),
   password: Yup.string().required("Password is required"),
@@ -44,7 +44,6 @@ const MyForm = () => {
   };
     
     
-
   return (
     <Container>
       <Formik
@@ -90,6 +89,7 @@ const MyForm = () => {
             as={Input}
             style={{ margin: "10px" }}
             name="password"
+            type="password"
             placeholder="Enter Password"
             fullWidth
           />
