@@ -1,38 +1,116 @@
-import Input from "@mui/material/Input"
-import Container from "@mui/material/Container"
-import Button from "@mui/material/Button"
-import { useDispatch, useSelector } from "react-redux"
-import { setUserSlice } from "../redux/slice/user"
-import { addUserSlice, editUserSlice } from "../redux/slice/users"
-import { nanoid } from "@reduxjs/toolkit"
-import { CREATE_USER, UPDATE_USER_BY_ID } from "../redux/types"
-import Divider from "@mui/material/Divider"
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+import Input from "@mui/material/Input";
+import Container from "@mui/material/Container";
+import Button from "@mui/material/Button";
+import { useDispatch, useSelector } from "react-redux";
+import { setUserSlice } from "../redux/slice/user";
+
+import { nanoid } from "@reduxjs/toolkit";
+import { CREATE_USER, UPDATE_USER_BY_ID } from "../redux/types";
+
+
+const validationSchema = Yup.object({
+  name: Yup.string().required("Name is required"),
+  email: Yup.string().email("Invalid email").required("Email is required"),
+  password: Yup.string().required("Password is required"),
+});
+
 const MyForm = () => {
+  const user = useSelector((state) => state.user);
+  const dispatch = useDispatch();
 
-    const user = useSelector(state => state.user)
-    const dispatch = useDispatch()
-    const handleChange = (prop) => (event) => {
-        dispatch(setUserSlice({ ...user, [prop]: event.target.value }))
+  const handleSubmit = (values, { resetForm }) => {
+    const userToUpdate = {
+      ...values,
+      id: values.id === 0 ? nanoid(8) : values.id,
+    };
+
+    if (user.id === 0) {
+      dispatch({ type: CREATE_USER, user: userToUpdate });
+    } else {
+      dispatch({ type: UPDATE_USER_BY_ID, user: userToUpdate });
     }
-    const handleSubmit = () => {
-        user.id === 0 ? dispatch({ type: CREATE_USER, user: { ...user, id: nanoid(8) } }) : dispatch({ type: UPDATE_USER_BY_ID, user })
 
-        dispatch(setUserSlice({
-            id: 0,
-            name: '',
-            email: '',
-            password: ''
-        }))
-    }
-    return <>
-        <>
-            <Input style={{ margin: '10px' }} margin="normal" value={user.id} fullWidth disabled />
+    dispatch(
+      setUserSlice({
+        id: 0,
+        name: "",
+        email: "",
+        password: "",
+      })
+    );
+    resetForm();
+  };
+    
+    
 
-            <Input style={{ margin: '10px' }} onChange={handleChange('name')} placeholder="Enter Name" value={user.name} fullWidth />
-            <Input style={{ margin: '10px' }} onChange={handleChange('email')} placeholder="Enter Email" value={user.email} fullWidth />
-            <Input style={{ margin: '10px' }} onChange={handleChange('password')} placeholder="Enter Password" value={user.password} fullWidth />
-            <Button style={{ margin: '10px' }} onClick={() => handleSubmit()} fullWidth variant="contained">Submit</Button>
-        </>
-    </>
-}
-export default MyForm
+  return (
+    <Container>
+      <Formik
+        initialValues={user}
+        validationSchema={validationSchema}
+        onSubmit={handleSubmit}
+      >
+        <Form>
+          <Input
+            style={{ margin: "10px" }}
+            name="id"
+            margin="normal"
+            disabled
+          />
+
+          <Field
+            as={Input}
+            style={{ margin: "10px" }}
+            name="name"
+            placeholder="Enter Name"
+            fullWidth
+          />
+          <ErrorMessage
+            name="name"
+            component="div"
+            style={{ color: "red", margin: "5px" }}
+          />
+
+          <Field
+            as={Input}
+            style={{ margin: "10px" }}
+            name="email"
+            placeholder="Enter Email"
+            fullWidth
+          />
+          <ErrorMessage
+            name="email"
+            component="div"
+            style={{ color: "red", margin: "5px" }}
+          />
+
+          <Field
+            as={Input}
+            style={{ margin: "10px" }}
+            name="password"
+            placeholder="Enter Password"
+            fullWidth
+          />
+          <ErrorMessage
+            name="password"
+            component="div"
+            style={{ color: "red", margin: "5px" }}
+          />
+
+          <Button
+            style={{ margin: "10px" }}
+            type="submit"
+            fullWidth
+            variant="contained"
+          >
+            Submit
+          </Button>
+        </Form>
+      </Formik>
+    </Container>
+  );
+};
+
+export default MyForm;
